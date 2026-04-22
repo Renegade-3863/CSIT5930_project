@@ -39,3 +39,13 @@
 
 # debug information files
 *.dwo
+
+# Java build output
+out/
+
+# Crawl data and serialized state
+data/
+*.ser
+
+# IDE files
+.vscode/
