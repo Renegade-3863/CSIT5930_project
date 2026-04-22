@@ -16,13 +16,16 @@ This repository contains a Java implementation of the `spider` required by the C
 
 ## Repository layout
 
-- [src/hk/ust/csit5930/spider/SpiderApplication.java](src/hk/ust/csit5930/spider/SpiderApplication.java) - CLI entry point
-- [src/hk/ust/csit5930/spider/core/Spider.java](src/hk/ust/csit5930/spider/core/Spider.java) - BFS crawl loop and crawl decisions
-- [src/hk/ust/csit5930/spider/fetch/PageFetcher.java](src/hk/ust/csit5930/spider/fetch/PageFetcher.java) - HTTP fetch and `Last-Modified` checks
-- [src/hk/ust/csit5930/spider/html/HtmlDocumentParser.java](src/hk/ust/csit5930/spider/html/HtmlDocumentParser.java) - title, body text, and hyperlink extraction
-- [src/hk/ust/csit5930/spider/storage/SpiderState.java](src/hk/ust/csit5930/spider/storage/SpiderState.java) - persistent crawl state
-- [src/hk/ust/csit5930/spider/storage/SpiderRepository.java](src/hk/ust/csit5930/spider/storage/SpiderRepository.java) - serialization and exported files
-- [src/hk/ust/csit5930/spider/index/FilePageIndexConsumer.java](src/hk/ust/csit5930/spider/index/FilePageIndexConsumer.java) - handoff files for the later indexer
+- [src/SpiderApplication.java](src/SpiderApplication.java) - CLI entry point
+- [src/core/Spider.java](src/core/Spider.java) - BFS crawl loop and crawl decisions
+- [src/core/SpiderConfig.java](src/core/SpiderConfig.java) - immutable crawler configuration
+- [src/fetch/PageFetcher.java](src/fetch/PageFetcher.java) - HTTP fetch and `Last-Modified` checks
+- [src/html/HtmlDocumentParser.java](src/html/HtmlDocumentParser.java) - title, body text, and hyperlink extraction
+- [src/storage/SpiderState.java](src/storage/SpiderState.java) - persistent crawl state
+- [src/storage/SpiderRepository.java](src/storage/SpiderRepository.java) - serialization and exported files
+- [src/index/FilePageIndexConsumer.java](src/index/FilePageIndexConsumer.java) - handoff files for the later indexer
+- [scripts/build.ps1](scripts/build.ps1) - compile all Java source files under `src/`
+- [scripts/run-spider.ps1](scripts/run-spider.ps1) - build and run helper script
 
 ## Requirements
 
@@ -38,7 +41,7 @@ Open a terminal in [CSIT5930_project](CSIT5930_project) and run:
 
 `powershell -ExecutionPolicy Bypass -File .\scripts\build.ps1`
 
-Compiled classes are written to [CSIT5930_project/out](CSIT5930_project/out).
+The script compiles every `.java` file under [src](src) and writes the `.class` files to [out](out).
 
 ## Run
 
@@ -60,6 +63,15 @@ Arguments:
 You can also run:
 
 `powershell -ExecutionPolicy Bypass -File .\scripts\run-spider.ps1 -StartUrl "https://www.cse.ust.hk/~kwtleung/COMP4321/testpage.htm" -MaxPages 300 -StorageDir "data\spider" -SameHostOnly true`
+
+If you want a fresh crawl without reusing old state, use a new output directory each time, for example:
+
+- `data/spider-run1`
+- `data/spider-run2`
+
+Example:
+
+`powershell -ExecutionPolicy Bypass -File .\scripts\run-spider.ps1 -StartUrl "https://www.cse.ust.hk/~kwtleung/COMP4321/testpage.htm" -MaxPages 300 -StorageDir "data\spider-run1" -SameHostOnly true`
 
 ### Course seed URL
 
@@ -85,7 +97,7 @@ The `data/` directory is ignored by Git, so crawl results will not be committed 
 
 ## Rerun from scratch
 
-Delete [CSIT5930_project/data/spider](CSIT5930_project/data/spider), then build and run again.
+Either delete [data/spider](data/spider) and run again, or choose a new output directory such as [data/spider-run1](data/spider-run1) or [data/spider-run2](data/spider-run2).
 
 ## Design summary
 
