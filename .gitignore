@@ -45,6 +45,7 @@ out/
 
 # Crawl data and serialized state
 *.ser
+data/
 
 # IDE files
 .vscode/

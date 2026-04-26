@@ -26,17 +26,25 @@ public final class SpiderRepository {
     private final Path htmlDir;
     private final Path textDir;
     private final Path exportedDir;
+    private final boolean writePageArtifacts;
 
     public SpiderRepository(Path storageDir) throws IOException {
+        this(storageDir, false);
+    }
+
+    public SpiderRepository(Path storageDir, boolean writePageArtifacts) throws IOException {
         this.storageDir = storageDir;
         this.stateFile = storageDir.resolve("spider-state.ser");
         this.htmlDir = storageDir.resolve("pages").resolve("html");
         this.textDir = storageDir.resolve("pages").resolve("text");
         this.exportedDir = storageDir.resolve("exports");
+        this.writePageArtifacts = writePageArtifacts;
         Files.createDirectories(storageDir);
-        Files.createDirectories(htmlDir);
-        Files.createDirectories(textDir);
         Files.createDirectories(exportedDir);
+        if (writePageArtifacts) {
+            Files.createDirectories(htmlDir);
+            Files.createDirectories(textDir);
+        }
     }
 
     public SpiderState loadOrCreate() throws IOException, ClassNotFoundException {
@@ -44,7 +52,10 @@ public final class SpiderRepository {
             return new SpiderState();
         }
         try (ObjectInputStream inputStream = new ObjectInputStream(Files.newInputStream(stateFile))) {
-            return (SpiderState) inputStream.readObject();
+            SpiderState state = (SpiderState) inputStream.readObject();
+            // Repair the cached fetched count for state files written before the field existed.
+            state.recomputeFetchedCount();
+            return state;
         }
     }
 
@@ -57,6 +68,12 @@ public final class SpiderRepository {
     }
 
     public ArtifactPaths writeArtifacts(PageInfo pageInfo, String html, HtmlDocument htmlDocument) throws IOException {
+        if (!writePageArtifacts) {
+            // The indexer reads from indexer_input/page-xxxx-body.txt instead. Skip the duplicate writes.
+            pageInfo.setHtmlSnapshotPath("");
+            pageInfo.setTextSnapshotPath("");
+            return new ArtifactPaths(null, null);
+        }
         String filename = String.format("page-%04d", pageInfo.getPageId());
         Path htmlFile = htmlDir.resolve(filename + ".html");
         Path textFile = textDir.resolve(filename + ".txt");
